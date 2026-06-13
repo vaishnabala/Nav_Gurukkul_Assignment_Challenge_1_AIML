@@ -1,0 +1,7 @@
+pymupdf
+pytesseract
+sentence-transformers
+qdrant-client
+streamlit
+python-dotenv
+groq
