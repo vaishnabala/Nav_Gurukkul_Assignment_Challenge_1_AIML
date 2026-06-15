@@ -74,9 +74,8 @@ Current PubMed evidence suggests:
 
 ---
 ### PUBMED REFERENCES
-[List the exact PMIDs from the provided context in this format:]
-PMID: [Number]
-PMID: [Number]
+[List the exact PMIDs from the provided context as clickable Markdown links using this format:]
+- [PMID: Number](https://pubmed.ncbi.nlm.nih.gov/Number/)
 """
 
 prompt_template = PromptTemplate(
@@ -87,24 +86,27 @@ prompt_template = PromptTemplate(
 # Create the LangChain pipeline
 chain = prompt_template | llm
 
-def generate_clinical_report(query):
-    print("1. Fetching recent literature from PubMed (Top 5 papers)...")
-    # Fetching 5 results to give the LLM enough context to build a solid report
-    papers = fetch_pubmed_abstracts(query, max_results=5)
+def generate_clinical_report(search_query, full_clinical_context=None):
+    if full_clinical_context is None:
+        full_clinical_context = search_query
+    print(f"1. Fetching recent literature from PubMed for: {search_query}...")
+    # Use the short keyword string for the API search
+    papers = fetch_pubmed_abstracts(search_query, max_results=5)
     
     if not papers:
         return "No recent literature found for this query. Please try rephrasing."
         
     print("2. Formatting context for the LLM...")
-    # Combine the retrieved abstracts into a single text block
     context_block = ""
     for paper in papers:
         context_block += f"PMID: {paper['pmid']}\nTitle: {paper['title']}\nAbstract: {paper['abstract']}\n\n"
         
     print("3. Generating structured clinical report via Groq...")
-    response = chain.invoke({"context": context_block, "query": query})
+    # Feed the massive PDF text block to the LLM context
+    response = chain.invoke({"context": context_block, "query": full_clinical_context})
     
     return response.content
+
 
 # --- Test Block ---
 if __name__ == "__main__":
