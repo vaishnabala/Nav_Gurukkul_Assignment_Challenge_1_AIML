@@ -4,4 +4,3 @@ langchain
 langchain-groq
 python-dotenv
 PyPDF2
-watchdog
